@@ -1,12 +1,24 @@
 <template>
-	<div class="" :class="{ 'grid grid-cols-3': horizontal, 'flex flex-wrap justify-between flex-col': !horizontal }">
-		<div v-for="entity in entitiesWithQr" :key="entity.name" class="flex flex-row justify-between">
-			<NuxtImg class="w-50px h-50px" src="https://placehold.co/50x50"></NuxtImg>
-			<div>
+	<div class="entity-list m-5"
+		:class="{ 'grid grid-cols-3 padding-only-start ml--4': horizontal, 'flex flex-wrap justify-between flex-col': !horizontal }">
+		<div v-for="(entity, index) in entitiesWithQr" :key="entity.name"
+			class="flex flex-row justify-between entity items-center">
+			<NuxtImg class="w-50px h-50px" :src="entity.logoLink || 'https://placehold.co/50x50'"></NuxtImg>
+			<div class="flex-grow m-x-2 flex justify-start h-full flex-col">
+				<div>{{ startNumber + index }}</div>
+
 				<div class="text-10px">{{ entity.name }}</div>
-				<div>{{ entity.objective.slice(0, 100) }}</div>
+				<div>{{ entity.objective }}</div>
 			</div>
 			<div v-html="entity.qr" class="qr"></div>
+		</div>
+		<div class="entity !h-0" v-if="showLastLine"></div>
+		<div v-if="entityParticiParla" class="flex flex-col justify-around entity items-center participarla-entity">
+			<NuxtImg class="w-100px h-100px" :src="entityParticiParla.logoLink || 'https://placehold.co/50x50'">
+			</NuxtImg>
+
+			<!-- <div class="text-10px">{{ entityParticiParla.name }}</div> -->
+			<div class="text-center">{{ entityParticiParla.objective }}</div>
 		</div>
 	</div>
 </template>
@@ -16,27 +28,107 @@ import {
 	renderSVG,
 } from 'uqr'
 
-let props = defineProps<{
-	entities: EntityList
+let props = withDefaults(defineProps<{
+	entities: EntityList,
+	startNumber?: number
 	horizontal?: boolean
-}>()
+	showLastLine?: boolean
+}>(), {
+	startNumber: 1,
+	showLastLine: false
+})
+
+let entityParticiParla = props.entities.find(a => a.name === "ParticiParla")
 
 let entitiesWithQr = computed(() => {
-	return props.entities.map(entity => {
+	return props.entities.filter(a => a.name !== "ParticiParla").map(entity => {
 		return {
 			...entity,
-			qr: renderSVG(entity.contact, {})
+			qr: entity.pdfLink ? renderSVG(entity.pdfLink, {}) : undefined
 		}
 	})
 })
 </script>
 
 <style scoped>
+.participarla-entity {
+	grid-column-start: 3;
+	/* grid-row-start: 1; */
+	grid-row: 1 / 3;
+}
+
 .qr,
 .qr svg {
 	height: 50px !important;
 	width: 50px !important;
+	min-width: 50px !important;
+	min-height: 50px !important;
 
 
+}
+
+.padding-only-start {
+	padding-left: 2rem;
+	--line-offset-start: 10px !important;
+	--line-offset-end: 10px !important;
+}
+
+.entity-list {
+
+	/* Locally scoped variables */
+	--gap: 2rem;
+	--line-offset: calc(var(--gap) / 2);
+	--line-thickness: 1px;
+	--line-color: rgb(114, 114, 114);
+	--line-offset-start: 20px;
+	--line-offset-end: 20px;
+
+	/* Grid layout (Can be anything) */
+	display: grid;
+	/* grid-template-columns: repeat(3, minmax(0, 1fr)); */
+	overflow: hidden;
+	gap: var(--gap);
+}
+
+.entity-list:has(.participarla-entity) {
+	grid-template-columns: 1fr 1fr 0.6fr;
+}
+
+/* Make Grid Items Control Absolute Pseudo Positioning */
+.entity {
+	position: relative;
+}
+
+/* Pseudo Element Shared Styling */
+.entity::before,
+.entity::after {
+	content: '';
+	position: absolute;
+	background-color: var(--line-color);
+	z-index: 1;
+
+
+
+}
+
+/* Row Borders */
+.entity::after {
+
+	inline-size: calc(100% - (var(--line-offset-start) + var(--line-offset-end)));
+	block-size: var(--line-thickness);
+	left: 50px;
+	inset-inline-start: 0;
+	margin-left: var(--line-offset-start);
+	margin-right: var(--line-offset-end);
+	inset-block-start: calc(var(--line-offset) * -1);
+}
+
+/* Column Borders */
+.entity::before {
+	inline-size: var(--line-thickness);
+	block-size: calc(100% - (var(--line-offset-start) + var(--line-offset-end)));
+	margin-top: var(--line-offset-start);
+	margin-bottom: var(--line-offset-start);
+	inset-inline-start: calc(var(--line-offset) * -1);
 }
 </style>

@@ -1,14 +1,27 @@
 <template>
 	<div class="container">
 		<NuxtRouteAnnouncer />
-		<EntityList :entities="entities.slice(0, 8)" class="vertical-list"></EntityList>
-		<EntityList :entities="entities.slice(8)" horizontal class="horizontal-list"></EntityList>
-		<Map class="map" :entities="entities"></Map>
+		<EntityList :entities="entities.slice(0, splitNumber)" class="vertical-list"></EntityList>
+		<EntityList :entities="entities.slice(splitNumber, splitNumber2)" :start-number="splitNumber + 1"
+			class="vertical-list2" show-last-line></EntityList>
+		<EntityList :entities="entities.slice(splitNumber2)" :start-number="splitNumber2 + 1" horizontal
+			class="horizontal-list"></EntityList>
+
+		<div class="map">
+			<div class="text-20 absolute z-50 bg-white w-full">CONOCE #PARTICIPARLA</div>
+			<Map :entities="entities"></Map>
+
+
+		</div>
+
 	</div>
 </template>
 
 <script lang="ts" setup>
 // import csvToJson from 'csvjson-csv2json';
+
+let splitNumber = 9
+let splitNumber2 = splitNumber + 7
 
 // let fileInputName = 'myInputFile.csv';
 // let fileOutputName = 'myOutputFile.json';
@@ -47,9 +60,9 @@ console.log(entities);
 	gap: 0px 0px;
 	/* grid-auto-flow: row; */
 	grid-template-areas:
-		"vertical-list map map map"
-		"vertical-list map map map"
-		"vertical-list map map map"
+		"vertical-list vertical-list2 map map"
+		"vertical-list vertical-list2 map map"
+		"vertical-list vertical-list2 map map"
 		"vertical-list horizontal-list horizontal-list horizontal-list";
 
 }
@@ -62,6 +75,10 @@ console.log(entities);
 	grid-area: vertical-list;
 }
 
+.vertical-list2 {
+	grid-area: vertical-list2;
+}
+
 .horizontal-list {
 	grid-area: horizontal-list;
 }
@@ -71,10 +88,21 @@ console.log(entities);
 	width: 100%;
 }
 
+:root {
+	--a3-width: 420mm;
+	--a3-height: 297mm;
+
+	--a4-width: 297mm;
+	--a4-height: 210mm;
+
+	--page-size-width: var(--a4-width);
+	--page-size-height: var(--a4-height);
+}
+
 html {
-	/* border: 1px solid red; */
-	width: 297mm;
-	height: 210mm;
+	width: var(--page-size-width);
+	height: var(--page-size-height);
+
 	background-color: black;
 	margin: 0;
 	padding: 0;
@@ -99,8 +127,11 @@ body {
 
 	html,
 	body {
-		width: 297mm;
-		height: 210mm;
+		/* width: 297mm;
+		height: 210mm; */
+
+		width: var(--page-size-width);
+		height: var(--page-size-height);
 	}
 
 	/* ... the rest of the rules ... */

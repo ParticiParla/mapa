@@ -26,12 +26,6 @@ importers:
       leaflet-arrowheads:
         specifier: ^1.4.0
         version: 1.4.0
-      leaflet-labeled-circle:
-        specifier: ^1.0.3
-        version: 1.0.3
-      leaflet.markercluster:
-        specifier: ^1.5.3
-        version: 1.5.3(leaflet@1.9.4)
       nuxt:
         specifier: ^3.12.4
         version: 3.12.4(@parcel/watcher@2.4.1)(@types/node@20.14.12)(ioredis@5.4.1)(magicast@0.3.4)(meow@9.0.0)(rollup@4.19.0)(terser@5.31.3)(vite@5.3.5(@types/node@20.14.12)(terser@5.31.3))
@@ -2475,17 +2469,6 @@ packages:
 
   leaflet-geometryutil@0.10.3:
     resolution: {integrity: sha512-Qeas+KsnenE0Km/ydt8km3AqFe7kJhVwuLdbCYM2xe2epsxv5UFEaVJiagvP9fnxS8QvBNbm7DJlDA0tkKo9VA==}
-
-  leaflet-labeled-circle@1.0.3:
-    resolution: {integrity: sha512-2j+9nn2OGDdn0kI7FkpZUMxWE4WP3tbb+4m6WBHzSJwm5Z1ZTxQxJ/Mkg9qWewiNmAE2PVFt2g5SNK7pKnGXbA==}
-
-  leaflet-path-drag@1.9.5:
-    resolution: {integrity: sha512-u2oQzU/IR+XezHwREyB4T3Og5DJXgdyxtmK+GEQyrVLUwLlWaFxa0QMGxlWgE4Ch+rSyUeYOq/x8uLnelC3DnQ==}
-
-  leaflet.markercluster@1.5.3:
-    resolution: {integrity: sha512-vPTw/Bndq7eQHjLBVlWpnGeLa3t+3zGiuM7fJwCkiMFq+nmRuG3RI3f7f4N4TDX7T4NpbAXpR2+NTRSEGfCSeA==}
-    peerDependencies:
-      leaflet: ^1.3.1
 
   leaflet@1.9.4:
     resolution: {integrity: sha512-nxS1ynzJOmOlHp+iL3FyWqK89GtNL8U8rvlMOsQdTTssxZwCXh8N2NB3GDQOL+YR3XnWyZAxwQixURb+FA74PA==}
@@ -6766,16 +6749,6 @@ snapshots:
       leaflet-geometryutil: 0.10.3
 
   leaflet-geometryutil@0.10.3:
-    dependencies:
-      leaflet: 1.9.4
-
-  leaflet-labeled-circle@1.0.3:
-    dependencies:
-      leaflet-path-drag: 1.9.5
-
-  leaflet-path-drag@1.9.5: {}
-
-  leaflet.markercluster@1.5.3(leaflet@1.9.4):
     dependencies:
       leaflet: 1.9.4
 

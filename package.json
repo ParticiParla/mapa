@@ -16,8 +16,6 @@
     "csvjson-csv2json": "^5.0.6",
     "leaflet": "^1.9.4",
     "leaflet-arrowheads": "^1.4.0",
-    "leaflet-labeled-circle": "^1.0.3",
-    "leaflet.markercluster": "^1.5.3",
     "nuxt": "^3.12.4",
     "unocss": "^0.61.5",
     "uqr": "^0.1.2",
