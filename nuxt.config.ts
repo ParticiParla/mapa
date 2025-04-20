@@ -10,6 +10,9 @@ export default defineNuxtConfig({
 		'@nuxt/ui',
 		'@nuxthub/core',
 	],
+	build: {
+		transpile: ['leaflet'],
+	},
 	css: ['~/assets/css/main.css'],
 	runtimeConfig: {
 		directusUrl: process.env.DIRECTUS_URL, // Solo disponible en el servidor
