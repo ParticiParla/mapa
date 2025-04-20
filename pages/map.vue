@@ -12,7 +12,7 @@
 				<div class="text-20 absolute z-50 bg-white w-full">CONOCE #PARTICIPARLA</div>
 			</div>
 
-			<Map :entities="entities"></Map>
+			<Map :entities="entities" :hubs="hubs"></Map>
 
 
 		</div>
@@ -48,7 +48,7 @@ let splitNumber2 = splitNumber + 7
 
 // })
 // console.log(entities);
-let entities = await $fetch('/api/entities')
+let { entities, hubs } = await $fetch('/api/entities')
 console.log(entities);
 </script>
 

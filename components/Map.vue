@@ -17,7 +17,8 @@
 
 <script lang="ts" setup>
 let props = defineProps<{
-	entities: EntityList
+	entities: EntityList,
+	hubs: Record<string, Hub[]>
 }>()
 import L from 'leaflet';
 import 'leaflet-arrowheads';
@@ -39,18 +40,17 @@ const onMapReady = () => {
 	});
 
 
-	let entitiesByHubs: Partial<Record<keyof typeof EntityHubsList, [number, Entity][]>> = {}
+	let entitiesByHubs: Partial<Record<keyof typeof props.hubs, [number, Entity][]>> = {}
 
 
 	let counter = 0
 	for (const entity of props.entities) {
 		counter++;
-		if (entity.coordinates == null) continue
 
 		if (!Array.isArray(entity.coordinates)) {
-			if (entitiesByHubs[entity.coordinates] === undefined) entitiesByHubs[entity.coordinates] = []
+			if (entitiesByHubs[entity.hub!] === undefined) entitiesByHubs[entity.hub!] = []
 
-			entitiesByHubs[entity.coordinates]!.push([counter, entity]);
+			entitiesByHubs[entity.hub!]!.push([counter, entity]);
 
 			continue
 		}
@@ -59,23 +59,22 @@ const onMapReady = () => {
 
 	}
 
-
-	for (const hubName in EntityHubsList) {
-		let hub = EntityHubsList[hubName as keyof typeof EntityHubsList]
+	for (const hubName in props.hubs) {
+		let hub = props.hubs[hubName as keyof typeof props.hubs][0]
 
 		L
-			.polyline([hub.positionToShow!, hub.coordinates], { color: 'black' })
+			.polyline([hub.pointToShow.coordinates, hub.coordinates.coordinates], { color: 'black' })
 			.arrowheads()
 			.addTo(map.value.leafletObject);
 
-		let entityInTheHub = entitiesByHubs[hubName as keyof typeof EntityHubsList]
+		let entityInTheHub = entitiesByHubs[hubName as keyof typeof props.hubs]
 
 		if (!entityInTheHub) continue
 
-		let points = _generatePointsCircle(entityInTheHub.length, map.value.leafletObject.latLngToLayerPoint(hub.positionToShow), hub.startOfCoordinates);
+		let points = _generatePointsCircle(entityInTheHub.length, map.value.leafletObject.latLngToLayerPoint(hub.pointToShow.coordinates), hub.startOfCoordinates);
 		for (const entity of entityInTheHub) {
 			let entityPoints = points.shift()
-			console.log(entityPoints);
+
 			entityPoints.y += hub.verticalPosition! || 0
 			entityPoints.x += hub.horizontalPosition! || 0
 			generateMarker(map.value.leafletObject.layerPointToLatLng(entityPoints), entity[0])

@@ -4,4 +4,12 @@ export default defineNuxtConfig({
 	ssr: false,
 	devtools: { enabled: false },
 	modules: ['@unocss/nuxt', "@nuxtjs/leaflet", "@nuxt/image", "@nuxt/fonts"],
+	runtimeConfig: {
+		directusUrl: process.env.DIRECTUS_URL, // Solo disponible en el servidor
+		directusToken: process.env.DIRECTUS_STATIC_TOKEN, // Solo disponible en el servidor
+
+		public: {
+			directusUrl: process.env.DIRECTUS_URL
+		}
+	},
 })

@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@directus/sdk':
+        specifier: ^19.1.0
+        version: 19.1.0
       '@nuxt/fonts':
         specifier: ^0.7.1
         version: 0.7.1(ioredis@5.4.1)(magicast@0.3.4)(rollup@4.19.0)(vite@5.3.5(@types/node@20.14.12)(terser@5.31.3))
@@ -244,6 +247,10 @@ packages:
   '@cloudflare/kv-asset-handler@0.3.4':
     resolution: {integrity: sha512-YLPHc8yASwjNkmcDMQMY35yiWjoKAKnhUbPRszBRS0YgH+IXtsMp61j+yTcnCE3oO2DgP0U3iejLC8FTtKDC8Q==}
     engines: {node: '>=16.13'}
+
+  '@directus/sdk@19.1.0':
+    resolution: {integrity: sha512-Nqem9BsvvGyVtAa69mGPtoMoMVkZxdIREdsWvvTzNF4/1XqaFfEiFL7PhtUNfc46/Nufus2+QUKYQbNiAWe3ZA==}
+    engines: {node: '>=22'}
 
   '@esbuild/aix-ppc64@0.20.2':
     resolution: {integrity: sha512-D+EBOJHXdNZcLJRBkhENNG8Wji2kgc9AZ9KiPr1JuZjsNtyHzrsfLRrY0tk2H2aoFu6RANO1y1iPPUCDYWkb5g==}
@@ -4228,6 +4235,8 @@ snapshots:
   '@cloudflare/kv-asset-handler@0.3.4':
     dependencies:
       mime: 3.0.0
+
+  '@directus/sdk@19.1.0': {}
 
   '@esbuild/aix-ppc64@0.20.2':
     optional: true
