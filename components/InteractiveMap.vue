@@ -19,7 +19,7 @@
 			<template #header>
 				<div class="flex items-center justify-between w-full">
 					<div class="flex items-center gap-4">
-						<NuxtImg v-if="selectedEntity?.logoLink" :src="selectedEntity.logoLink"
+						<img v-if="selectedEntity?.logoLink" :src="selectedEntity.logoLink"
 							class="h-8 w-8 object-contain" />
 						<h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
 							{{ selectedEntity?.name }}

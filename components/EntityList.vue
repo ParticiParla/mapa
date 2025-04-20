@@ -14,8 +14,8 @@
 		</div>
 		<div class="entity !h-0" v-if="showLastLine"></div>
 		<div v-if="entityParticiParla" class="flex flex-col justify-around entity items-center participarla-entity">
-			<NuxtImg class="w-44.64 h-44.64" :src="entityParticiParla.logoLink || 'https://placehold.co/50x50'">
-			</NuxtImg>
+			<img class="w-44.64 h-44.64" :src="entityParticiParla.logoLink || 'https://placehold.co/50x50'">
+			</img>
 
 			<!-- <div class="text-10px">{{ entityParticiParla.name }}</div> -->
 			<div class="text-center">{{ entityParticiParla.objective }}</div>
