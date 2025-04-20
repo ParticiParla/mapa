@@ -3,7 +3,8 @@ export default defineNuxtConfig({
 	compatibilityDate: '2024-04-03',
 	ssr: false,
 	devtools: { enabled: false },
-	modules: ['@unocss/nuxt', "@nuxtjs/leaflet", "@nuxt/image", "@nuxt/fonts"],
+	modules: ['@unocss/nuxt', "@nuxtjs/leaflet", "@nuxt/image", "@nuxt/fonts", '@nuxt/ui'],
+	css: ['~/assets/css/main.css'],
 	runtimeConfig: {
 		directusUrl: process.env.DIRECTUS_URL, // Solo disponible en el servidor
 		directusToken: process.env.DIRECTUS_STATIC_TOKEN, // Solo disponible en el servidor
