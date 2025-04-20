@@ -3,18 +3,18 @@
 		:class="{ 'grid grid-cols-3 padding-only-start ml--4': horizontal, 'flex flex-wrap justify-between flex-col': !horizontal }">
 		<div v-for="(entity, index) in entitiesWithQr" :key="entity.name"
 			class="flex flex-row justify-between entity items-center">
-			<NuxtImg class="w-50px h-50px" :src="entity.logoLink || 'https://placehold.co/50x50'"></NuxtImg>
+			<NuxtImg class="w-22.33 h-22.33" :src="entity.logoLink || 'https://placehold.co/50x50'"></NuxtImg>
 			<div class="flex-grow m-x-2 flex justify-start h-full flex-col">
 				<div>{{ startNumber + index }}</div>
 
-				<div class="text-10px">{{ entity.name }}</div>
+				<div class="text-4.5">{{ entity.name }}</div>
 				<div>{{ entity.objective }}</div>
 			</div>
 			<div v-html="entity.qr" class="qr"></div>
 		</div>
 		<div class="entity !h-0" v-if="showLastLine"></div>
 		<div v-if="entityParticiParla" class="flex flex-col justify-around entity items-center participarla-entity">
-			<NuxtImg class="w-100px h-100px" :src="entityParticiParla.logoLink || 'https://placehold.co/50x50'">
+			<NuxtImg class="w-44.64 h-44.64" :src="entityParticiParla.logoLink || 'https://placehold.co/50x50'">
 			</NuxtImg>
 
 			<!-- <div class="text-10px">{{ entityParticiParla.name }}</div> -->
@@ -59,18 +59,18 @@ let entitiesWithQr = computed(() => {
 
 .qr,
 .qr svg {
-	height: 50px !important;
-	width: 50px !important;
-	min-width: 50px !important;
-	min-height: 50px !important;
+	height: 5.5825rem !important;
+	width: 5.5825rem !important;
+	min-width: 5.5825rem !important;
+	min-height: 5.5825rem !important;
 
 
 }
 
 .padding-only-start {
 	padding-left: 2rem;
-	--line-offset-start: 10px !important;
-	--line-offset-end: 10px !important;
+	--line-offset-start: 0.625rem !important;
+	--line-offset-end: 0.625rem !important;
 }
 
 .entity-list {
@@ -78,10 +78,10 @@ let entitiesWithQr = computed(() => {
 	/* Locally scoped variables */
 	--gap: 2rem;
 	--line-offset: calc(var(--gap) / 2);
-	--line-thickness: 1px;
+	--line-thickness: 0.0625rem;
 	--line-color: rgb(114, 114, 114);
-	--line-offset-start: 20px;
-	--line-offset-end: 20px;
+	--line-offset-start: 1.25rem;
+	--line-offset-end: 1.25rem;
 
 	/* Grid layout (Can be anything) */
 	display: grid;
@@ -116,7 +116,7 @@ let entitiesWithQr = computed(() => {
 
 	inline-size: calc(100% - (var(--line-offset-start) + var(--line-offset-end)));
 	block-size: var(--line-thickness);
-	left: 50px;
+	left: 3.125rem;
 	inset-inline-start: 0;
 	margin-left: var(--line-offset-start);
 	margin-right: var(--line-offset-end);

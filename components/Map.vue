@@ -96,7 +96,7 @@ function generateMarker(coordinates: number[], text: number) {
 		coordinates, {
 		icon: L.divIcon({
 			html: `<div>${text}</div>`,
-			className: 'bg-white border-2 border-solid border-black border rounded-full w-full h-full text-10px text-center flex justify-center items-center',
+			className: 'bg-white border-2 border-solid border-black border rounded-full w-full h-full text-4.5 text-center flex justify-center items-center',
 			iconSize: [25, 25]
 		})
 	})
