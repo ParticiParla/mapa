@@ -147,11 +147,19 @@ const onMapReady = () => {
 }
 
 function generateMarker(coordinates: LatLngExpression, entity: Entity) {
+	let iconHtml: string;
+	if (entity.logoLink) {
+		iconHtml = `<img src="${entity.logoLink}" alt="${entity.name || 'logo'}" class="w-full h-full object-contain rounded-full">`;
+	} else {
+		const index = props.entities.findIndex((e: Entity) => e === entity);
+		iconHtml = `<div>${index + 1}</div>`;
+	}
+
 	const marker = new L.Marker(
 		coordinates, {
 		icon: L.divIcon({
-			html: `<div>${props.entities.findIndex((e: Entity) => e === entity) + 1}</div>`,
-			className: 'bg-white border-2 border-solid border-black border rounded-full w-full h-full text-4.5 text-center flex justify-center items-center cursor-pointer hover:bg-gray-200',
+			html: iconHtml,
+			className: 'bg-white border-2 border-solid border-black rounded-full w-[25px] h-[25px] text-sm text-center flex justify-center items-center cursor-pointer hover:bg-gray-200 overflow-hidden',
 			iconSize: [25, 25]
 		})
 	});
