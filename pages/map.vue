@@ -12,8 +12,7 @@
 				<div class="text-20 absolute z-50 bg-white w-full">CONOCE #PARTICIPARLA</div>
 			</div>
 
-			<Map :entities="entities" :hubs="hubs"></Map>
-
+			<BaseMap :entities="entities" :hubs="hubs"></BaseMap>
 
 		</div>
 
@@ -22,6 +21,11 @@
 
 <script lang="ts" setup>
 // import csvToJson from 'csvjson-csv2json';
+
+// Importar BaseMap
+import BaseMap from '~/components/BaseMap.vue';
+// Usar el tipo Entity global
+import type { Entity, Hub } from '~/utils/types';
 
 let splitNumber = 9
 let splitNumber2 = splitNumber + 7
@@ -48,7 +52,8 @@ let splitNumber2 = splitNumber + 7
 
 // })
 // console.log(entities);
-let { entities, hubs } = await $fetch('/api/entities')
+// Usar los tipos Entity y Hub importados
+let { entities, hubs } = await $fetch<{ entities: Entity[], hubs: Record<string, Hub[]> }>('/api/entities')
 console.log(entities);
 </script>
 
