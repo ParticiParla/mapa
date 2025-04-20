@@ -7,8 +7,7 @@ export default defineNuxtConfig({
 		"@nuxtjs/leaflet",
 		"@nuxt/image",
 		"@nuxt/fonts",
-		'@nuxt/ui',
-		'@nuxthub/core',
+		'@nuxt/ui'
 	],
 	build: {
 		transpile: ['leaflet'],
