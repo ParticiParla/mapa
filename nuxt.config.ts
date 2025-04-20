@@ -9,6 +9,7 @@ export default defineNuxtConfig({
 		directusUrl: process.env.DIRECTUS_URL, // Solo disponible en el servidor
 		directusToken: process.env.DIRECTUS_STATIC_TOKEN, // Solo disponible en el servidor
 
+
 		public: {
 			directusUrl: process.env.DIRECTUS_URL
 		}
