@@ -48,21 +48,13 @@ const onMapReady = () => {
 	layersToRemove.forEach(layer => leafletMap.removeLayer(layer));
 
 
-	let entitiesByHubs: Partial<Record<keyof typeof props.hubs, [number, Entity][]>> = {}
+	let entitiesByHubs: Partial<Record<keyof typeof props.hubs, [string, Entity][]>> = {}
 
-	// Mapeo de índice global para entidades
-	const entityIndexMap = new Map<Entity, number>();
-	props.entities.forEach((entity, index) => {
-		entityIndexMap.set(entity, index + 1);
-	});
-
-
-	for (const entity of props.entities) {
-		const entityIndex = entityIndexMap.get(entity);
-		if (entityIndex === undefined) continue; // Skip if entity not found in map (should not happen)
-
+	for (const entityIndex in props.entities) {
+		const entity = props.entities[entityIndex]
 
 		if (!Array.isArray(entity.coordinates)) {
+			if (entity.hub === undefined) continue
 			if (entitiesByHubs[entity.hub!] === undefined) entitiesByHubs[entity.hub!] = []
 			// Almacenar índice global junto con la entidad
 			entitiesByHubs[entity.hub!]!.push([entityIndex, entity]);
@@ -70,7 +62,8 @@ const onMapReady = () => {
 		}
 
 		const coords: LatLngExpression = [entity.coordinates[0], entity.coordinates[1]];
-		generateMarker(coords, entity, entityIndex).addTo(leafletMap);
+
+		generateMarker(coords, entity, Number(entityIndex) + 1).addTo(leafletMap);
 	}
 
 	for (const hubName in props.hubs) {
@@ -98,7 +91,7 @@ const onMapReady = () => {
 
 			entityPoints.y += hub.verticalPosition! || 0
 			entityPoints.x += hub.horizontalPosition! || 0
-			generateMarker(leafletMap.layerPointToLatLng(entityPoints), entity, entityIndex)
+			generateMarker(leafletMap.layerPointToLatLng(entityPoints), entity, Number(entityIndex) + 1)
 				.addTo(leafletMap);
 		}
 	}
@@ -110,7 +103,7 @@ const onMapReady = () => {
 function generateMarker(coordinates: LatLngExpression, entity: Entity, index: number) {
 	let iconHtml: string;
 	if (props.markerType === 'logo' && entity.logoLink) {
-		iconHtml = `<img src="${entity.logoLink}" alt="${entity.name || 'logo'}" class="w-full h-full object-contain rounded-full">`;
+		iconHtml = `<img src="${entity.logoLink}" alt="${entity.name || 'logo'}" class="!w-full !h-full !object-contain !rounded-full">`;
 	} else {
 		// Usar el índice global pasado como argumento
 		iconHtml = `<div>${index}</div>`;
