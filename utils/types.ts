@@ -4,6 +4,7 @@ export interface Entity {
 	objective: string,
 	coordinates?: number[] | null,
 	pdfLink?: string
+	logo?: string
 	logoLink?: string
 	hub?: number
 	description?: string

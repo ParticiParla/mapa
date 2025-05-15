@@ -12,7 +12,7 @@
 				<div class="text-20 absolute z-50 bg-white w-full">CONOCE </div>
 				<NuxtImg provider="directus" width="70" height="70" fit="outside"
 					class="w-30 h-30 z-50 right-125 absolute"
-					:src="entityParticiParla.logoLink || 'https://placehold.co/50x50'">
+					:src="entityParticiParla?.logo || 'https://placehold.co/50x50'">
 				</NuxtImg>
 				<div class="w-120 h-25 z-50 right-0 absolute text-5.6 top-3">{{ entityParticiParla.objective }}</div>
 			</div>

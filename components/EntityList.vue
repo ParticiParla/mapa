@@ -4,7 +4,7 @@
 		<div v-for="(entity, index) in entitiesWithQr" :key="entity.name"
 			class="flex flex-row justify-between entity items-center">
 			<NuxtImg provider="directus" width="50" height="50" fit="outside" class="w-22.33 h-22.33"
-				:src="entity.logoLink || 'https://placehold.co/50x50'">
+				:src="entity.logo || 'https://placehold.co/50x50'">
 			</NuxtImg>
 			<div class="flex-grow m-x-2 flex justify-start h-full flex-col">
 				<div>{{ startNumber + index }}</div>
@@ -17,14 +17,14 @@
 		<div class="entity !h-0" v-if="showLastLine"></div>
 		<!-- <div v-if="entityParticiParla" class="flex flex-col justify-around entity items-center participarla-entity">
 			<NuxtImg provider="directus" width="100" height="100" fit="outside" class="w-44.64 h-44.64"
-				:src="entityParticiParla.logoLink || 'https://placehold.co/50x50'">
+				:src="entityParticiParla.logo || 'https://placehold.co/50x50'">
 			</NuxtImg>
 
 			<div class="text-center">{{ entityParticiParla.objective }}</div>
 		</div> -->
 		<div v-if="entityParticiParla" class="flex flex-col justify-around entity items-center participarla-entity">
 			<!-- <NuxtImg provider="directus" width="100" height="100" fit="outside" class="w-44.64 h-44.64"
-				:src="entityParticiParla.logoLink || 'https://placehold.co/50x50'">
+				:src="entityParticiParla.logo || 'https://placehold.co/50x50'">
 			</NuxtImg> -->
 			<div v-html="qrMainPage" class="w-44.64 h-44.64"></div>
 
