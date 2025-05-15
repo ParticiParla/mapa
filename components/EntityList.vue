@@ -63,7 +63,7 @@ let entityParticiParla = props.entities.find(a => a.name === "ParticiParla")
 let entitiesWithQr = computed(() => {
 	return props.entities.filter(a => a.name !== "ParticiParla").map(entity => {
 		// Construir la URL completa para el QR
-		const path = entity.id ? `/index?entity=${entity.id}` : undefined;
+		const path = entity.id ? `/?entity=${entity.id}` : undefined;
 		const fullQrUrl = path ? `${baseUrl}${path}` : undefined;
 		return {
 			...entity,
