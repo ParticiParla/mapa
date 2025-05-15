@@ -103,7 +103,7 @@ const onMapReady = () => {
 function generateMarker(coordinates: LatLngExpression, entity: Entity, index: number) {
 	let iconHtml: string;
 	if (props.markerType === 'logo' && entity.logoLink) {
-		iconHtml = `<img src="${entity.logoLink}" alt="${entity.name || 'logo'}" class="!w-full !h-full !object-contain !rounded-full">`;
+		iconHtml = `<img src="${entity.logoLink}?width=21&height=21" alt="${entity.name || 'logo'}" class="!w-full !h-full !object-contain !rounded-full">`;
 	} else {
 		// Usar el índice global pasado como argumento
 		iconHtml = `<div>${index}</div>`;
