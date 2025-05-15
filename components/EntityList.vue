@@ -3,7 +3,9 @@
 		:class="{ 'grid grid-cols-3 padding-only-start ml--4': horizontal, 'flex flex-wrap justify-between flex-col': !horizontal }">
 		<div v-for="(entity, index) in entitiesWithQr" :key="entity.name"
 			class="flex flex-row justify-between entity items-center">
-			<NuxtImg class="w-22.33 h-22.33" :src="entity.logoLink || 'https://placehold.co/50x50'"></NuxtImg>
+			<NuxtImg provider="directus" width="50" height="50" fit="outside" class="w-22.33 h-22.33"
+				:src="entity.logoLink || 'https://placehold.co/50x50'">
+			</NuxtImg>
 			<div class="flex-grow m-x-2 flex justify-start h-full flex-col">
 				<div>{{ startNumber + index }}</div>
 
@@ -13,12 +15,20 @@
 			<div v-html="entity.qr" class="qr"></div>
 		</div>
 		<div class="entity !h-0" v-if="showLastLine"></div>
-		<div v-if="entityParticiParla" class="flex flex-col justify-around entity items-center participarla-entity">
-			<img class="w-44.64 h-44.64" :src="entityParticiParla.logoLink || 'https://placehold.co/50x50'">
-			</img>
+		<!-- <div v-if="entityParticiParla" class="flex flex-col justify-around entity items-center participarla-entity">
+			<NuxtImg provider="directus" width="100" height="100" fit="outside" class="w-44.64 h-44.64"
+				:src="entityParticiParla.logoLink || 'https://placehold.co/50x50'">
+			</NuxtImg>
 
-			<!-- <div class="text-10px">{{ entityParticiParla.name }}</div> -->
 			<div class="text-center">{{ entityParticiParla.objective }}</div>
+		</div> -->
+		<div v-if="entityParticiParla" class="flex flex-col justify-around entity items-center participarla-entity">
+			<!-- <NuxtImg provider="directus" width="100" height="100" fit="outside" class="w-44.64 h-44.64"
+				:src="entityParticiParla.logoLink || 'https://placehold.co/50x50'">
+			</NuxtImg> -->
+			<div v-html="qrMainPage" class="w-44.64 h-44.64"></div>
+
+			<div class="text-center">Mira el mapa actualizado y contacta con las asociaciones en tu móvil!</div>
 		</div>
 	</div>
 </template>
@@ -27,6 +37,7 @@
 import {
 	renderSVG,
 } from 'uqr'
+import { useRequestURL } from '#imports';
 
 let props = withDefaults(defineProps<{
 	entities: EntityList,
@@ -38,13 +49,25 @@ let props = withDefaults(defineProps<{
 	showLastLine: false
 })
 
+// Obtener la URL base
+const requestUrl = useRequestURL();
+const baseUrl = requestUrl.origin;
+
+let qrMainPage = computed(() => {
+
+	return renderSVG(`${baseUrl}`, {})
+});
+
 let entityParticiParla = props.entities.find(a => a.name === "ParticiParla")
 
 let entitiesWithQr = computed(() => {
 	return props.entities.filter(a => a.name !== "ParticiParla").map(entity => {
+		// Construir la URL completa para el QR
+		const path = entity.id ? `/index?entity=${entity.id}` : undefined;
+		const fullQrUrl = path ? `${baseUrl}${path}` : undefined;
 		return {
 			...entity,
-			qr: entity.pdfLink ? renderSVG(entity.pdfLink, {}) : undefined
+			qr: fullQrUrl ? renderSVG(fullQrUrl, {}) : undefined
 		}
 	})
 })

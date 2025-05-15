@@ -9,8 +9,18 @@
 
 		<div class="map">
 			<div class="relative">
-				<div class="text-20 absolute z-50 bg-white w-full">CONOCE #PARTICIPARLA</div>
+				<div class="text-20 absolute z-50 bg-white w-full">CONOCE </div>
+				<NuxtImg provider="directus" width="70" height="70" fit="outside"
+					class="w-30 h-30 z-50 right-125 absolute"
+					:src="entityParticiParla.logoLink || 'https://placehold.co/50x50'">
+				</NuxtImg>
+				<div class="w-120 h-25 z-50 right-0 absolute text-5.6 top-3">{{ entityParticiParla.objective }}</div>
 			</div>
+
+			<!-- <div class="relative">
+				<div class="!w-[50px] !h-[50px] top-30 absolute z-50 right-0 bg-white" v-html="qrMainPage"></div>
+				<div class="text-10 absolute z-50 top-30 right-0 bg-white">Mira el mapa actualizado en tu móvil</div>
+			</div> -->
 
 			<BaseMap :entities="entities" :hubs="hubs"></BaseMap>
 
@@ -23,12 +33,18 @@
 // import csvToJson from 'csvjson-csv2json';
 
 // Importar BaseMap
+import { renderSVG } from 'uqr';
 import BaseMap from '~/components/BaseMap.vue';
 // Usar el tipo Entity global
 import type { Entity, Hub } from '~/utils/types';
 
 let splitNumber = 9
-let splitNumber2 = splitNumber + 7
+let splitNumber2 = splitNumber + 7;
+
+let entityParticiParla = computed(() => {
+	return entities.find(a => a.name === "ParticiParla")
+})
+
 
 // let fileInputName = 'myInputFile.csv';
 // let fileOutputName = 'myOutputFile.json';
@@ -126,6 +142,7 @@ html {
 
 body {
 	background-color: white;
+	color: black !important;
 	height: 100%;
 	width: 100%;
 	margin: 0;

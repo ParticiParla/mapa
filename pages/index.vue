@@ -32,23 +32,52 @@
 			</template>
 			<template #body>
 				<div class="p-4 flex flex-col flex-1 overflow-y-auto h-full gap-6">
-					<!-- Logo moved to header -->
 					<div>
-						<h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Descripción</h4>
+						<h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Descripción</h4>
 						<p class="text-sm text-gray-500 dark:text-gray-400">
-							{{ selectedEntity?.objective }}
+							{{ selectedEntity?.objective || 'No disponible' }}
 						</p>
 					</div>
-					<div class="flex flex-col flex-1 min-h-0">
-						<h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Documento</h4>
-						<template v-if="selectedEntity?.pdfLink">
-							<iframe :src="selectedEntity.pdfLink" width="100%" style="border: none;"
-								class="flex-1"></iframe>
-							<UButton :to="selectedEntity.pdfLink" target="_blank" label="Abrir PDF en nueva pestaña"
-								icon="i-heroicons-arrow-top-right-on-square" variant="link" :padded="false" />
-						</template>
-						<p v-else class="text-sm text-gray-500 dark:text-gray-400 text-center">No hay PDF
-							disponible.
+
+					<div v-if="selectedEntity?.description">
+						<h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Objetivo</h4>
+						<p class="text-sm text-gray-500 dark:text-gray-400">
+							{{ selectedEntity.description }}
+						</p>
+					</div>
+
+					<div v-if="selectedEntity?.activities">
+						<h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Actividades</h4>
+						<p class="text-sm text-gray-500 dark:text-gray-400">
+							{{ selectedEntity.activities }}
+						</p>
+					</div>
+
+					<div v-if="selectedEntity?.participate">
+						<h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Cómo Participar</h4>
+						<p class="text-sm text-gray-500 dark:text-gray-400">
+							{{ selectedEntity.participate }}
+						</p>
+					</div>
+
+					<div v-if="selectedEntity?.schedule">
+						<h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Horario</h4>
+						<p class="text-sm text-gray-500 dark:text-gray-400">
+							{{ selectedEntity.schedule }}
+						</p>
+					</div>
+
+					<div v-if="selectedEntity?.contact">
+						<h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Contacto</h4>
+						<p class="text-sm text-gray-500 dark:text-gray-400">
+							{{ selectedEntity.contact }}
+						</p>
+					</div>
+
+					<div v-if="selectedEntity?.observations">
+						<h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Observaciones</h4>
+						<p class="text-sm text-gray-500 dark:text-gray-400">
+							{{ selectedEntity.observations }}
 						</p>
 					</div>
 				</div>
@@ -62,6 +91,7 @@
 import type { Entity, Hub } from '~/utils/types';
 // Importar BaseMap en lugar de InteractiveMap
 import BaseMap from '~/components/BaseMap.vue';
+import { useRoute } from 'vue-router';
 
 // Lógica para obtener los datos de las entidades si es necesario
 const { data } = await useFetch<{ entities: Entity[], hubs: Record<string, Hub[]> }>('/api/entities')
@@ -77,6 +107,34 @@ function handleMarkerClick(entity: Entity) {
 	selectedEntity.value = entity;
 	isModalOpen.value = true;
 }
+
+// Manejar query param para abrir slideover
+const route = useRoute();
+
+watchEffect(() => {
+	console.log('watchEffect triggered. Query:', route.query.entity, 'Entities loaded:', entities.value.length > 0);
+	let entityIdFromQuery = route.query.entity;
+
+	if (Array.isArray(entityIdFromQuery)) {
+		entityIdFromQuery = entityIdFromQuery[0];
+	}
+
+	console.log('Effective entityIdFromQuery:', entityIdFromQuery);
+
+	if (entityIdFromQuery && entities.value.length > 0) {
+		console.log('Searching for entity...');
+		const foundEntity = entities.value.find(e => {
+			return String(e.id) === entityIdFromQuery;
+		});
+
+		if (foundEntity) {
+			console.log('Entity found:', foundEntity, 'Opening slideover.');
+			handleMarkerClick(foundEntity);
+		} else {
+			console.warn(`Entity with id "${entityIdFromQuery}" not found.`);
+		}
+	}
+});
 
 </script>
 

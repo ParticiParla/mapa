@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
 
 	try {
 		const entities = await client.request(readItems('Entity', {
-			fields: ['name', 'objetive', 'logo', 'coordinates', 'file', 'hub']
+			fields: ['id', 'name', 'objetive', 'logo', 'coordinates', 'file', 'hub', 'description', 'schedule', 'activities', 'participate', 'observations', 'contact']
 		}));
 
 		let hubs = await client.request(readItems('Hub', {
@@ -35,12 +35,19 @@ export default defineEventHandler(async (event) => {
 
 		const response: EntityList = entities.map((item: any): Entity => {
 			return {
+				id: item.id,
 				name: item.name,
 				objective: item.objetive,
-				logoLink: item.logo ? `${directusUrl}/assets/${item.logo}` : item.logoLink,
+				logoLink: item.logo,
 				pdfLink: item.file ? `${directusUrl}/assets/${item.file}` : item.pdfLink,
 				coordinates: item.hub ? item.coordinates?.coordinates.reverse() : item.coordinates?.coordinates.reverse(),
 				hub: item.hub,
+				description: item.description,
+				schedule: item.schedule,
+				activities: item.activities,
+				participate: item.participate,
+				observations: item.observations,
+				contact: item.contact
 			};
 		});
 
