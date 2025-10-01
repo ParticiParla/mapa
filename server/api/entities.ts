@@ -18,7 +18,10 @@ export default defineEventHandler(async (event) => {
 
 	try {
 		const entities = await client.request(readItems('Entity', {
-			fields: ['id', 'name', 'objetive', 'logo', 'coordinates', 'file', 'hub', 'description', 'schedule', 'activities', 'participate', 'observations', 'contact']
+			fields: ['id', 'name', 'objetive', 'logo', 'coordinates', 'file', 'hub', 'description', 'schedule', 'activities', 'participate', 'observations', 'contact'],
+			filter: {
+				status: "Published"
+			}
 		}));
 
 		let hubs = await client.request(readItems('Hub', {
