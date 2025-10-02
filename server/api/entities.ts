@@ -24,17 +24,17 @@ export default defineEventHandler(async (event) => {
 			}
 		}));
 
-		let hubs = await client.request(readItems('Hub', {
+		let hubs = await client.request<Hub[]>(readItems('Hub', {
 			fields: ['id', 'name', 'horizontalPosition', 'verticalPosition', 'startOfCoordinates', 'pointToShow', 'coordinates']
 		}));
 
-		hubs = hubs.map((item: any): Hub => {
+		hubs = hubs.map((item: Hub): Hub => {
 			return {
 				...item,
 				coordinates: { coordinates: item.coordinates.coordinates.reverse() },
 				pointToShow: { coordinates: item.pointToShow.coordinates.reverse() },
 			}
-		})
+		}).filter(hub => entities.some(entity => entity.hub === hub.id))
 
 		const response: EntityList = entities.map((item: any): Entity => {
 			return {

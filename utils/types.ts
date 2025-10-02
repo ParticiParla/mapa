@@ -16,6 +16,7 @@ export interface Entity {
 }
 
 export interface Hub {
+	id: number,
 	name: string,
 	horizontalPosition: number,
 	verticalPosition: number,
