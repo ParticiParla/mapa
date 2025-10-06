@@ -55,9 +55,19 @@ let props = withDefaults(defineProps<{
 const requestUrl = useRequestURL();
 const baseUrl = requestUrl.origin;
 
+const isLocalhost = computed(() => {
+	return baseUrl.includes('localhost') || !baseUrl.includes('participarla');
+})
+
+const color = computed(() => {
+	return isLocalhost.value ? 'red' : 'black';
+})
+
 let qrMainPage = computed(() => {
 
-	return renderSVG(`${baseUrl}`, {})
+	return renderSVG(`${baseUrl}`, {
+		blackColor: color.value
+	})
 });
 
 let entityParticiParla = props.entities.find(a => a.name === "ParticiParla")
@@ -69,7 +79,9 @@ let entitiesWithQr = computed(() => {
 		const fullQrUrl = path ? `${baseUrl}${path}` : undefined;
 		return {
 			...entity,
-			qr: fullQrUrl ? renderSVG(fullQrUrl, {}) : undefined
+			qr: fullQrUrl ? renderSVG(fullQrUrl, {
+				blackColor: color.value
+			}) : undefined
 		}
 	})
 })
