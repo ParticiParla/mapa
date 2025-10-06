@@ -29,6 +29,8 @@
 			<div v-html="qrMainPage" class="w-44.64 h-44.64"></div>
 
 			<div class="text-center">Mira el mapa actualizado y contacta con las asociaciones en tu móvil!</div>
+
+			<div>{{ baseUrl }}</div>
 		</div>
 	</div>
 </template>
