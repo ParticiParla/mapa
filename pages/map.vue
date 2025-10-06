@@ -1,4 +1,5 @@
 <template>
+	<div v-if="isLocalhost" class="text-20 absolute h-full z-10000 text-red w-full -rotate-25 flex justify-center items-center">VERSIÓN LOCALHOST</div>
 	<div class="container">
 		<NuxtRouteAnnouncer />
 		<EntityList :entities="entitiesWithParticiparlaLast.slice(0, splitNumber)" class="vertical-list"></EntityList>
@@ -31,7 +32,12 @@
 
 <script lang="ts" setup>
 // import csvToJson from 'csvjson-csv2json';
+const requestUrl = useRequestURL();
+const baseUrl = requestUrl.origin;
 
+const isLocalhost = computed(() => {
+	return baseUrl.includes('localhost') || !baseUrl.includes('participarla');
+})
 // Importar BaseMap
 import { renderSVG } from 'uqr';
 import BaseMap from '~/components/BaseMap.vue';
