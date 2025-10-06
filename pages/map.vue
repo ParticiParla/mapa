@@ -1,10 +1,10 @@
 <template>
 	<div class="container">
 		<NuxtRouteAnnouncer />
-		<EntityList :entities="entities.slice(0, splitNumber)" class="vertical-list"></EntityList>
-		<EntityList :entities="entities.slice(splitNumber, splitNumber2)" :start-number="splitNumber + 1"
+		<EntityList :entities="entitiesWithParticiparlaLast.slice(0, splitNumber)" class="vertical-list"></EntityList>
+		<EntityList :entities="entitiesWithParticiparlaLast.slice(splitNumber, splitNumber2)" :start-number="splitNumber + 1"
 			class="vertical-list2" show-last-line></EntityList>
-		<EntityList :entities="entities.slice(splitNumber2)" :start-number="splitNumber2 + 1" horizontal
+		<EntityList :entities="entitiesWithParticiparlaLast.slice(splitNumber2)" :start-number="splitNumber2 + 1" horizontal
 			class="horizontal-list"></EntityList>
 
 		<div class="map">
@@ -22,7 +22,7 @@
 				<div class="text-10 absolute z-50 top-30 right-0 bg-white">Mira el mapa actualizado en tu móvil</div>
 			</div> -->
 
-			<BaseMap :entities="entities" :hubs="hubs"></BaseMap>
+			<BaseMap :entities="entitiesWithParticiparlaLast" :hubs="hubs"></BaseMap>
 
 		</div>
 
@@ -70,6 +70,17 @@ let entityParticiParla = computed(() => {
 // console.log(entities);
 // Usar los tipos Entity y Hub importados
 let { entities, hubs } = await $fetch<{ entities: Entity[], hubs: Record<string, Hub[]> }>('/api/entities')
+
+const entitiesWithParticiparlaLast = computed(() => {
+	let entitiesWithoutParticiParla = entities.map((entity, index) => {
+		return {
+			index,
+			...entity,
+		}
+	}).filter(entity => entity.name !== "ParticiParla")
+
+	return [...entitiesWithoutParticiParla, entityParticiParla.value!]
+})
 console.log(entities);
 </script>
 
