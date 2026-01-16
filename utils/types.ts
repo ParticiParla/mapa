@@ -13,6 +13,7 @@ export interface Entity {
 	participate?: string
 	observations?: string
 	contact?: string
+  contact_items?: string[]
 }
 
 export interface Hub {

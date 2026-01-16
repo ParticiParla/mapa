@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
 
 	try {
 		const entities = await client.request(readItems('Entity', {
-			fields: ['id', 'name', 'objetive', 'logo', 'coordinates', 'file', 'hub', 'description', 'schedule', 'activities', 'participate', 'observations', 'contact'],
+			fields: ['id', 'name', 'objetive', 'logo', 'coordinates', 'file', 'hub', 'description', 'schedule', 'activities', 'participate', 'observations', 'contact', 'contact_items'],
 			filter: {
 				status: "Published"
 			}
@@ -51,7 +51,9 @@ export default defineEventHandler(async (event) => {
 				activities: item.activities,
 				participate: item.participate,
 				observations: item.observations,
-				contact: item.contact
+				contact: item.contact,
+        // contact_items: item.contact_items.sort((a: { type: string }, b: { type: string }) => a.type.localeCompare(b.type)) //da error
+        contact_items: item.contact_items
 			};
 		});
 

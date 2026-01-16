@@ -67,11 +67,27 @@
 						</p>
 					</div>
 
-					<div v-if="selectedEntity?.contact">
+					<!--
+          <div v-if="selectedEntity?.contact">
 						<h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Contacto</h4>
 						<p class="text-sm text-gray-500 dark:text-gray-400">
 							{{ selectedEntity.contact }}
 						</p>
+					</div>
+          -->
+
+					<div v-if="selectedEntity?.contact_items">
+            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Contacto</h4>
+            <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div v-for="(item, index) in selectedEntity.contact_items" :key="index" :class="{ 'mb-4': index !== selectedEntity.contact_items.length - 1 }">
+                <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-1"><UIcon :name="listDetails[item.type]?.icon || 'material-symbols:info-outline'" class="size-5 me-2" />{{ listDetails[item.type]?.text }}</h4>
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                  <a :href="`${listDetails[item.type]?.urlPrefix || ''}${item.value.replace('@', '')}`" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">
+                    {{ item.value }}
+                  </a>
+                </p>
+              </div>
+            </div>
 					</div>
 
 					<div v-if="selectedEntity?.observations">
@@ -107,6 +123,17 @@ function handleMarkerClick(entity: Entity) {
 	selectedEntity.value = entity;
 	isModalOpen.value = true;
 }
+
+const listDetails = {
+  "phone": {"text": "Teléfono", "icon": "material-symbols:call", "urlPrefix": "tel:"},
+  "instagram": {"text": "Instagram", "icon": "mdi:instagram", "urlPrefix": "https://instagram.com/"},
+  "facebook": {"text": "Facebook", "icon": "mdi:facebook-box", "urlPrefix": "https://facebook.com/"},
+  "email": {"text": "Correo electrónico", "icon": "material-symbols:alternate-email", "urlPrefix": "mailto:"},
+  "web": {"text": "Sitio web", "icon": "tabler:world-www", "urlPrefix": "https://"},
+  "x": {"text": "Twitter", "icon": "hugeicons:new-twitter", "urlPrefix": "https://twitter.com/"}
+}
+//const listIcon = {"phone": "material-symbols:call", "instagram": "mdi:instagram", "facebook": "mdi:facebook-box", "email": "material-symbols:alternate-email", "web": "tabler:world-www", "x": "hugeicons:new-twitter"}
+//const listContactType = {"phone": "Teléfono", "instagram": "Instagram", "facebook": "Facebook", "email": "Correo electrónico", "web": "Sitio web", "x": "Twitter"}
 
 // Manejar query param para abrir slideover
 const route = useRoute();
