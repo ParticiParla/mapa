@@ -1,0 +1,12 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+	"mcp": {
+		"Directus": {
+			"type": "remote",
+			"url": "https://api.participarla.es/mcp",
+			"headers": {
+				"Authorization": "Bearer EDTSV8tarkVDY3LAsPsTAtBL46m5cmKS"
+			}
+		}
+	}
+}

@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
 
 	try {
 		const entities = await client.request(readItems('Entity', {
-			fields: ['id', 'name', 'objetive', 'logo', 'coordinates', 'file', 'hub', 'description', 'schedule', 'activities', 'participate', 'observations', 'contact', 'contact_items'],
+			fields: ['id', 'name', 'objetive', 'logo', 'coordinates', 'file', 'hub', 'description', 'schedule', 'activities', 'participate', 'observations', 'contact', 'contact_items', 'typology'],
 			filter: {
 				status: "Published"
 			}
@@ -41,6 +41,7 @@ export default defineEventHandler(async (event) => {
 				id: item.id,
 				name: item.name,
 				objective: item.objetive,
+				typology: item.typology,
 				logo: item.logo,
 				logoLink: item.logo ? `${directusUrl}/assets/${item.logo}` : item.logoLink,
 				pdfLink: item.file ? `${directusUrl}/assets/${item.file}` : item.pdfLink,

@@ -2,6 +2,7 @@ export interface Entity {
 	id: number,
 	name: string,
 	objective: string,
+	typology?: 'asociacion' | 'tablon' | 'teatro' | 'espacio' | 'biblioteca' | null,
 	coordinates?: number[] | null,
 	pdfLink?: string
 	logo?: string

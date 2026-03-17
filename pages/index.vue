@@ -193,7 +193,6 @@ const layers = [
 	{ id: 'teatros', label: 'Teatros' },
 	{ id: 'bibliotecas', label: 'Bibliotecas' },
 	{ id: 'espacios', label: 'Espacios asociativos' },
-	{ id: 'lacantuenia', label: 'La Cantueña' },
 ]
 
 const activeLayers = ref<string[]>(layers.map(l => l.id))
@@ -211,34 +210,15 @@ function toggleLayer(id: string) {
 }
 
 function getEntityLayers(entity: Entity): string[] {
-	const name = (entity.name || '').toLowerCase()
-	const objective = (entity.objective || '').toLowerCase()
-	const description = (entity.description || '').toLowerCase()
-	const text = `${name} ${objective} ${description}`
-
-	const result: string[] = []
-
-	if (text.includes('cantueña') || text.includes('cantuen')) {
-		result.push('lacantuenia')
-	}
-	if (text.includes('biblioteca')) {
-		result.push('bibliotecas')
-	}
-	if (text.includes('teatro')) {
-		result.push('teatros')
-	}
-	if (text.includes('tablón') || text.includes('tablon')) {
-		result.push('tablones')
-	}
-	if (text.includes('espacio') && text.includes('asociat')) {
-		result.push('espacios')
+	const typologyToLayer: Record<string, string> = {
+		asociacion: 'asociaciones',
+		tablon: 'tablones',
+		teatro: 'teatros',
+		biblioteca: 'bibliotecas',
+		espacio: 'espacios',
 	}
 
-	if (!result.length) {
-		result.push('asociaciones')
-	}
-
-	return result
+	return [typologyToLayer[entity.typology || 'asociacion'] || 'asociaciones']
 }
 
 const filteredEntities = computed(() => {

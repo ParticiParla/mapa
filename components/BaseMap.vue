@@ -9,9 +9,10 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from 'vue'
+import { getCurrentInstance, h, ref, render, watch } from 'vue'
+import { Icon } from '#components'
 import type { Entity, Hub, EntityList } from '~/utils/types';
-import L, { type LatLngExpression, type Layer, type LatLngTuple } from 'leaflet';
+import L, { type LatLngExpression, type LatLngTuple } from 'leaflet';
 import 'leaflet-arrowheads';
 
 // Define props
@@ -33,38 +34,121 @@ const emit = defineEmits<{
 
 let startCoordiantes: LatLngTuple = [40.237541, -3.765740];
 let map = ref()
+const entityMarkers = new Map<number, L.Marker>()
+const hubLineLayers = new Map<number, L.Polyline>()
+
+type DesiredMarker = {
+	entity: Entity,
+	coordinates: LatLngExpression,
+	index: number,
+	hubId?: number,
+}
 
 function updateVisibleEntities(leafletMap: L.Map) {
 	const bounds = leafletMap.getBounds();
 	const collected = new Map<number, Entity>();
 
-	leafletMap.eachLayer((layer: Layer) => {
-		if (layer instanceof L.Marker) {
-			const latlng = layer.getLatLng();
-			if (bounds.contains(latlng)) {
-				const anyLayer = layer as any;
-				const entity: Entity | undefined = anyLayer.__entity;
-				if (entity && !collected.has(entity.id)) {
-					collected.set(entity.id, entity);
-				}
-			}
+	for (const marker of entityMarkers.values()) {
+		const latlng = marker.getLatLng();
+		if (!bounds.contains(latlng)) continue
+
+		const anyLayer = marker as any;
+		const entity: Entity | undefined = anyLayer.__entity;
+		if (entity && !collected.has(entity.id)) {
+			collected.set(entity.id, entity);
 		}
-	});
+	}
 
 	emit('visible-change', Array.from(collected.values()));
 }
 
-function renderLayers(leafletMap: L.Map) {
-	// Limpiar capas existentes excepto TileLayer
-	const layersToRemove: Layer[] = [];
-	leafletMap.eachLayer((layer: Layer) => {
-		if (!(layer instanceof L.TileLayer)) {
-			layersToRemove.push(layer);
-		}
-	});
-	layersToRemove.forEach(layer => leafletMap.removeLayer(layer));
+function updateHubLines(leafletMap: L.Map) {
+	const bounds = leafletMap.getBounds();
+	const visibleHubIds = new Set<number>();
 
+	for (const marker of entityMarkers.values()) {
+		const anyLayer = marker as any;
+		const hubId: number | undefined = anyLayer.__hubId;
+		if (!hubId) continue
+		if (bounds.contains(marker.getLatLng())) {
+			visibleHubIds.add(hubId);
+		}
+	}
+
+	for (const [hubId, lineLayer] of hubLineLayers.entries()) {
+		if (visibleHubIds.has(hubId)) continue
+		leafletMap.removeLayer(lineLayer)
+		hubLineLayers.delete(hubId)
+	}
+
+	for (const hubName in props.hubs) {
+		const hub = props.hubs[hubName as keyof typeof props.hubs][0]
+		if (!visibleHubIds.has(hub.id)) continue
+		if (hubLineLayers.has(hub.id)) continue
+
+		const hubCoords: LatLngExpression = [hub.coordinates.coordinates[0], hub.coordinates.coordinates[1]];
+		const hubPointToShowCoords: LatLngExpression = [hub.pointToShow.coordinates[0], hub.pointToShow.coordinates[1]];
+
+		const hubLine = L
+			.polyline([hubPointToShowCoords, hubCoords], { color: 'black' })
+			.arrowheads({})
+			.addTo(leafletMap);
+
+		hubLineLayers.set(hub.id, hubLine);
+	}
+}
+
+function getMarkerSignature(entity: Entity, coordinates: LatLngExpression, index: number, hubId?: number) {
+	const latLng = Array.isArray(coordinates)
+		? L.latLng(coordinates[0], coordinates[1])
+		: L.latLng(coordinates)
+	const { lat, lng } = latLng
+	return JSON.stringify({
+		lat,
+		lng,
+		index,
+		hubId,
+		markerType: props.markerType,
+		interactive: props.interactive,
+		logoLink: entity.logoLink ?? null,
+		typology: entity.typology ?? null,
+	})
+}
+
+function syncMarker(leafletMap: L.Map, desiredMarker: DesiredMarker) {
+	const existingMarker = entityMarkers.get(desiredMarker.entity.id)
+	const nextSignature = getMarkerSignature(
+		desiredMarker.entity,
+		desiredMarker.coordinates,
+		desiredMarker.index,
+		desiredMarker.hubId,
+	)
+
+	if (existingMarker) {
+		const currentSignature = (existingMarker as any).__signature as string | undefined
+		if (currentSignature === nextSignature) {
+			;(existingMarker as any).__entity = desiredMarker.entity
+			;(existingMarker as any).__hubId = desiredMarker.hubId
+			if (!leafletMap.hasLayer(existingMarker)) {
+				existingMarker.addTo(leafletMap)
+			}
+			return
+		}
+
+		leafletMap.removeLayer(existingMarker)
+		entityMarkers.delete(desiredMarker.entity.id)
+	}
+
+	const marker = generateMarker(desiredMarker.coordinates, desiredMarker.entity, desiredMarker.index)
+	;(marker as any).__hubId = desiredMarker.hubId
+	;(marker as any).__signature = nextSignature
+	marker.addTo(leafletMap)
+	entityMarkers.set(desiredMarker.entity.id, marker)
+}
+
+function renderLayers(leafletMap: L.Map) {
 	let entitiesByHubs: Partial<Record<keyof typeof props.hubs, [string, Entity][]>> = {}
+	const desiredMarkers = new Map<number, DesiredMarker>()
 
 	for (const entityIndex in props.entities) {
 		const entity = props.entities[entityIndex]
@@ -79,18 +163,16 @@ function renderLayers(leafletMap: L.Map) {
 
 		const coords: LatLngExpression = [entity.coordinates[0], entity.coordinates[1]];
 
-		generateMarker(coords, entity, Number(entityIndex) + 1).addTo(leafletMap);
+		desiredMarkers.set(entity.id, {
+			entity,
+			coordinates: coords,
+			index: Number(entityIndex) + 1,
+		})
 	}
 
 	for (const hubName in props.hubs) {
 		let hub = props.hubs[hubName as keyof typeof props.hubs][0]
-		const hubCoords: LatLngExpression = [hub.coordinates.coordinates[0], hub.coordinates.coordinates[1]];
 		const hubPointToShowCoords: LatLngExpression = [hub.pointToShow.coordinates[0], hub.pointToShow.coordinates[1]];
-
-		L
-			.polyline([hubPointToShowCoords, hubCoords], { color: 'black' })
-			.arrowheads({}) // Asegurarse que arrowheads es llamado
-			.addTo(leafletMap);
 
 		let entityInTheHub = entitiesByHubs[hubName as keyof typeof props.hubs]
 
@@ -107,11 +189,27 @@ function renderLayers(leafletMap: L.Map) {
 
 			entityPoints.y += hub.verticalPosition! || 0
 			entityPoints.x += hub.horizontalPosition! || 0
-			generateMarker(leafletMap.layerPointToLatLng(entityPoints), entity, Number(entityIndex) + 1)
-				.addTo(leafletMap);
+			const markerLatLng = leafletMap.layerPointToLatLng(entityPoints)
+			desiredMarkers.set(entity.id, {
+				entity,
+				coordinates: markerLatLng,
+				index: Number(entityIndex) + 1,
+				hubId: hub.id,
+			})
 		}
 	}
 
+	for (const [entityId, marker] of entityMarkers.entries()) {
+		if (desiredMarkers.has(entityId)) continue
+		leafletMap.removeLayer(marker)
+		entityMarkers.delete(entityId)
+	}
+
+	for (const desiredMarker of desiredMarkers.values()) {
+		syncMarker(leafletMap, desiredMarker)
+	}
+
+	updateHubLines(leafletMap);
 	updateVisibleEntities(leafletMap);
 }
 
@@ -128,6 +226,7 @@ const onMapReady = () => {
 
 	// Actualizar lista visible al mover/zoom
 	leafletMap.on('moveend zoomend', () => {
+		updateHubLines(leafletMap);
 		updateVisibleEntities(leafletMap);
 	});
 }
@@ -139,15 +238,47 @@ watch(() => [props.entities, props.hubs], () => {
 	}
 }, { deep: true })
 
+const typologyIcons: Record<string, string> = {
+	tablon: 'mdi:bullhorn-outline',
+	teatro: 'mdi:theater',
+	biblioteca: 'material-symbols:menu-book-outline-rounded',
+	espacio: 'mdi:office-building-outline',
+}
+
+const renderedIconCache = new Map<string, string>()
+const appContext = getCurrentInstance()?.appContext ?? null
+
+function renderNuxtIconToHtml(name: string) {
+	const cachedIcon = renderedIconCache.get(name)
+	if (cachedIcon) return cachedIcon
+
+	const container = document.createElement('div')
+	const vnode = h(Icon, { name, class: 'size-4 text-black' })
+	vnode.appContext = appContext
+	render(vnode, container)
+	const iconHtml = container.innerHTML
+	render(null, container)
+	renderedIconCache.set(name, iconHtml)
+
+	return iconHtml
+}
+
+function getMarkerContent(entity: Entity, index: number) {
+	if (entity.typology && entity.typology !== 'asociacion') {
+		const iconName = typologyIcons[entity.typology]
+		return iconName ? renderNuxtIconToHtml(iconName) : `<div>${index}</div>`;
+	}
+
+	if (props.markerType === 'logo' && entity.logoLink) {
+		return `<img src="${entity.logoLink}?width=21&height=21" alt="${entity.name || 'logo'}" class="!w-full !h-full !object-contain !rounded-full">`;
+	}
+
+	return `<div>${index}</div>`;
+}
+
 // Modificado para aceptar índice y usar props
 function generateMarker(coordinates: LatLngExpression, entity: Entity, index: number) {
-	let iconHtml: string;
-	if (props.markerType === 'logo' && entity.logoLink) {
-		iconHtml = `<img src="${entity.logoLink}?width=21&height=21" alt="${entity.name || 'logo'}" class="!w-full !h-full !object-contain !rounded-full">`;
-	} else {
-		// Usar el índice global pasado como argumento
-		iconHtml = `<div>${index}</div>`;
-	}
+	const iconHtml = getMarkerContent(entity, index);
 
 	const marker = new L.Marker(
 		coordinates, {
