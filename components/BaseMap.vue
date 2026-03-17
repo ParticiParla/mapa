@@ -9,6 +9,7 @@
 </template>
 
 <script lang="ts" setup>
+import { ref, watch } from 'vue'
 import type { Entity, Hub, EntityList } from '~/utils/types';
 import L, { type LatLngExpression, type Layer, type LatLngTuple } from 'leaflet';
 import 'leaflet-arrowheads';
@@ -27,17 +28,33 @@ const props = withDefaults(defineProps<{
 // Define emits
 const emit = defineEmits<{
 	(e: 'marker-click', entity: Entity): void
+	(e: 'visible-change', entities: Entity[]): void
 }>()
 
 let startCoordiantes: LatLngTuple = [40.237541, -3.765740];
 let map = ref()
 
-const onMapReady = () => {
-	const leafletMap = map.value.leafletObject as L.Map;
+function updateVisibleEntities(leafletMap: L.Map) {
+	const bounds = leafletMap.getBounds();
+	const collected = new Map<number, Entity>();
 
-	if (leafletMap.zoomControl) leafletMap.removeControl(leafletMap.zoomControl);
-	if (leafletMap.attributionControl) leafletMap.removeControl(leafletMap.attributionControl);
+	leafletMap.eachLayer((layer: Layer) => {
+		if (layer instanceof L.Marker) {
+			const latlng = layer.getLatLng();
+			if (bounds.contains(latlng)) {
+				const anyLayer = layer as any;
+				const entity: Entity | undefined = anyLayer.__entity;
+				if (entity && !collected.has(entity.id)) {
+					collected.set(entity.id, entity);
+				}
+			}
+		}
+	});
 
+	emit('visible-change', Array.from(collected.values()));
+}
+
+function renderLayers(leafletMap: L.Map) {
 	// Limpiar capas existentes excepto TileLayer
 	const layersToRemove: Layer[] = [];
 	leafletMap.eachLayer((layer: Layer) => {
@@ -46,7 +63,6 @@ const onMapReady = () => {
 		}
 	});
 	layersToRemove.forEach(layer => leafletMap.removeLayer(layer));
-
 
 	let entitiesByHubs: Partial<Record<keyof typeof props.hubs, [string, Entity][]>> = {}
 
@@ -96,8 +112,32 @@ const onMapReady = () => {
 		}
 	}
 
-	leafletMap.setView(startCoordiantes, 14);
+	updateVisibleEntities(leafletMap);
 }
+
+const onMapReady = () => {
+	const leafletMap = map.value.leafletObject as L.Map;
+
+	if (leafletMap.zoomControl) leafletMap.removeControl(leafletMap.zoomControl);
+	if (leafletMap.attributionControl) leafletMap.removeControl(leafletMap.attributionControl);
+
+	leafletMap.setView(startCoordiantes, 14);
+
+	// Render inicial
+	renderLayers(leafletMap);
+
+	// Actualizar lista visible al mover/zoom
+	leafletMap.on('moveend zoomend', () => {
+		updateVisibleEntities(leafletMap);
+	});
+}
+
+watch(() => [props.entities, props.hubs], () => {
+	const leafletMap = map.value?.leafletObject as L.Map | undefined;
+	if (leafletMap) {
+		renderLayers(leafletMap);
+	}
+}, { deep: true })
 
 // Modificado para aceptar índice y usar props
 function generateMarker(coordinates: LatLngExpression, entity: Entity, index: number) {
@@ -118,6 +158,9 @@ function generateMarker(coordinates: LatLngExpression, entity: Entity, index: nu
 			iconSize: [25, 25]
 		})
 	});
+
+	// Guardar la entidad en el marker para poder saber qué puntos están visibles
+	;(marker as any).__entity = entity;
 
 	// Añadir listener solo si es interactivo
 	if (props.interactive) {

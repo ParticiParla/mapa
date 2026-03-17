@@ -1,17 +1,79 @@
 <template>
 	<div class="flex flex-col h-screen">
 		<header class="bg-gray-800 text-white p-4 shadow-md">
-			<h1 class="text-xl font-semibold">Mapa Interactivo de Asociaciones</h1>
+			<div class="flex flex-col gap-2">
+				<h1 class="text-xl font-semibold">Mapa Interactivo de Asociaciones</h1>
+				<div class="flex flex-col md:flex-row md:items-center gap-3 mt-1">
+					<UInput
+						v-model="searchQuery"
+						placeholder="Buscar por nombre, actividad..."
+						icon="i-heroicons-magnifying-glass-20-solid"
+						class="w-full md:w-72"
+					/>
+					<div class="flex flex-wrap gap-2">
+						<UButton
+							v-for="layer in layers"
+							:key="layer.id"
+							:size="'xs'"
+							:variant="isLayerActive(layer.id) ? 'solid' : 'outline'"
+							:color="isLayerActive(layer.id) ? 'primary' : 'neutral'"
+							@click="toggleLayer(layer.id)"
+						>
+							{{ layer.label }}
+						</UButton>
+					</div>
+				</div>
+			</div>
 		</header>
 		<main class="flex-1 relative">
 			<div class="map-container absolute inset-0">
 				<ClientOnly>
-					<BaseMap v-if="entities.length" :entities="entities" :hubs="hubs" markerType="logo" interactive
-						@marker-click="handleMarkerClick" />
+					<BaseMap
+						v-if="filteredEntities.length"
+						:entities="filteredEntities"
+						:hubs="hubs"
+						markerType="logo"
+						interactive
+						@marker-click="handleMarkerClick"
+						@visible-change="handleVisibleChange"
+					/>
 					<div v-else class="flex items-center justify-center h-full text-gray-500">
 						Cargando mapa...
 					</div>
 				</ClientOnly>
+			</div>
+
+			<!-- Panel lateral con lista de puntos visibles -->
+			<div class="pointer-events-none absolute inset-y-4 right-4 w-80 max-w-full z-20">
+				<div class="pointer-events-auto bg-white/90 shadow-lg rounded-lg border border-gray-200 flex flex-col max-h-full">
+					<div class="px-3 py-2 border-b border-gray-200 flex items-center justify-between">
+						<h2 class="text-sm font-semibold text-gray-800">
+							Puntos visibles ({{ visibleEntities.length }})
+						</h2>
+					</div>
+					<div class="overflow-y-auto p-2 space-y-2 text-sm">
+						<div
+							v-for="entity in visibleEntities"
+							:key="entity.id"
+							class="flex items-start gap-2 p-2 rounded hover:bg-gray-100 cursor-pointer"
+							@click="handleMarkerClick(entity)"
+						>
+							<div class="flex-shrink-0 h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
+								<img v-if="entity.logoLink" :src="entity.logoLink" alt="" class="h-full w-full object-contain" />
+								<span v-else class="text-xs text-gray-500">{{ entity.name.charAt(0) }}</span>
+							</div>
+							<div class="flex-1 min-w-0">
+								<p class="font-medium text-gray-900 truncate">{{ entity.name }}</p>
+								<p v-if="entity.objective" class="text-xs text-gray-600 line-clamp-2">
+									{{ entity.objective }}
+								</p>
+							</div>
+						</div>
+						<div v-if="!visibleEntities.length" class="text-xs text-gray-500 italic">
+							Mueve o acerca el mapa para ver puntos aquí.
+						</div>
+					</div>
+				</div>
 			</div>
 		</main>
 
@@ -115,6 +177,101 @@ const { data } = await useFetch<{ entities: Entity[], hubs: Record<string, Hub[]
 const entities = computed(() => data.value?.entities ?? [])
 const hubs = computed(() => data.value?.hubs ?? {})
 
+// Lista de entidades actualmente visibles en el mapa
+const visibleEntities = ref<Entity[]>([])
+
+function handleVisibleChange(entities: Entity[]) {
+	visibleEntities.value = entities
+}
+
+// --- Buscador y capas ---
+const searchQuery = ref('')
+
+const layers = [
+	{ id: 'asociaciones', label: 'Asociaciones de ParticiParla' },
+	{ id: 'tablones', label: 'Tablones de Libre Expresión' },
+	{ id: 'teatros', label: 'Teatros' },
+	{ id: 'bibliotecas', label: 'Bibliotecas' },
+	{ id: 'espacios', label: 'Espacios asociativos' },
+	{ id: 'lacantuenia', label: 'La Cantueña' },
+]
+
+const activeLayers = ref<string[]>(layers.map(l => l.id))
+
+function isLayerActive(id: string) {
+	return activeLayers.value.includes(id)
+}
+
+function toggleLayer(id: string) {
+	if (activeLayers.value.includes(id)) {
+		activeLayers.value = activeLayers.value.filter((layerId: string) => layerId !== id)
+	} else {
+		activeLayers.value.push(id)
+	}
+}
+
+function getEntityLayers(entity: Entity): string[] {
+	const name = (entity.name || '').toLowerCase()
+	const objective = (entity.objective || '').toLowerCase()
+	const description = (entity.description || '').toLowerCase()
+	const text = `${name} ${objective} ${description}`
+
+	const result: string[] = []
+
+	if (text.includes('cantueña') || text.includes('cantuen')) {
+		result.push('lacantuenia')
+	}
+	if (text.includes('biblioteca')) {
+		result.push('bibliotecas')
+	}
+	if (text.includes('teatro')) {
+		result.push('teatros')
+	}
+	if (text.includes('tablón') || text.includes('tablon')) {
+		result.push('tablones')
+	}
+	if (text.includes('espacio') && text.includes('asociat')) {
+		result.push('espacios')
+	}
+
+	if (!result.length) {
+		result.push('asociaciones')
+	}
+
+	return result
+}
+
+const filteredEntities = computed(() => {
+	const q = searchQuery.value.trim().toLowerCase()
+	const active = new Set(activeLayers.value)
+
+	return entities.value.filter((entity: Entity) => {
+		// Filtro por capas
+		const entityLayers = getEntityLayers(entity)
+		if (active.size && !entityLayers.some(layerId => active.has(layerId))) {
+			return false
+		}
+
+		// Filtro por texto
+		if (!q) return true
+
+		const haystack = [
+			entity.name,
+			entity.objective,
+			entity.description,
+			entity.activities,
+			entity.participate,
+			entity.observations,
+			entity.contact,
+		]
+			.filter(Boolean)
+			.join(' ')
+			.toLowerCase()
+
+		return haystack.includes(q)
+	})
+})
+
 // Lógica del Slideover movida aquí
 const isModalOpen = ref(false)
 const selectedEntity = ref<Entity | null>(null)
@@ -150,7 +307,7 @@ watchEffect(() => {
 
 	if (entityIdFromQuery && entities.value.length > 0) {
 		console.log('Searching for entity...');
-		const foundEntity = entities.value.find(e => {
+		const foundEntity = entities.value.find((e: Entity) => {
 			return String(e.id) === entityIdFromQuery;
 		});
 

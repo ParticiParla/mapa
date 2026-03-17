@@ -1,4 +1,16 @@
-# Nuxt 3 Minimal Starter
+# Mapa de ParticiParla
+
+Este proyecto es un mapa interactivo de asociaciones y espacios de ParticiParla construido con Nuxt 3.
+
+Para entender cómo se estructura el mapa, los hubs, las entidades, el buscador, las capas y el listado lateral de puntos visibles, consulta la documentación en:
+
+- [docs/mapa-interactivo.md](docs/mapa-interactivo.md)
+
+---
+
+_Nota: el resto de este README es el contenido base del starter de Nuxt 3._
+
+## Nuxt 3 Minimal Starter
 
 Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 
