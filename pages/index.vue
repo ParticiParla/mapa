@@ -1,8 +1,8 @@
 <template>
 	<div class="flex flex-col h-screen">
-		<header class="bg-gray-800 text-white p-4 shadow-md">
+		<header class="bg-white text-gray-900 p-4 shadow-md border-b border-gray-200">
 			<div class="flex flex-col gap-2">
-				<h1 class="text-xl font-semibold">Mapa Interactivo de Asociaciones</h1>
+				<h1 class="text-xl font-semibold">Mapa de Participación en Parla</h1>
 				<div class="flex flex-col md:flex-row md:items-center gap-3 mt-1">
 					<UInput
 						v-model="searchQuery"
@@ -43,8 +43,7 @@
 				</ClientOnly>
 			</div>
 
-			<!-- Panel lateral con lista de puntos visibles -->
-			<div class="pointer-events-none absolute inset-y-4 right-4 w-80 max-w-full z-20">
+			<div class="pointer-events-none absolute inset-y-4 right-4 hidden md:block w-80 max-w-full z-20">
 				<div class="pointer-events-auto bg-white/90 shadow-lg rounded-lg border border-gray-200 flex flex-col max-h-full">
 					<div class="px-3 py-2 border-b border-gray-200 flex items-center justify-between">
 						<h2 class="text-sm font-semibold text-gray-800">
@@ -56,7 +55,7 @@
 							v-for="entity in visibleEntities"
 							:key="entity.id"
 							class="flex items-start gap-2 p-2 rounded hover:bg-gray-100 cursor-pointer"
-							@click="handleMarkerClick(entity)"
+							@click="handleVisibleEntityClick(entity)"
 						>
 							<div class="flex-shrink-0 h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
 								<img v-if="entity.logoLink" :src="entity.logoLink" alt="" class="h-full w-full object-contain" />
@@ -75,7 +74,62 @@
 					</div>
 				</div>
 			</div>
+
+			<div class="pointer-events-none absolute inset-x-4 bottom-4 z-20 md:hidden">
+				<div class="flex justify-center">
+					<UButton
+						class="pointer-events-auto shadow-lg !bg-white !text-gray-900 ring-1 ring-gray-200"
+						color="neutral"
+						variant="outline"
+						icon="i-heroicons-list-bullet-20-solid"
+						@click="isVisibleListOpen = true"
+					>
+						Puntos visibles ({{ visibleEntities.length }})
+					</UButton>
+				</div>
+			</div>
 		</main>
+
+		<USlideover v-model:open="isVisibleListOpen" side="bottom" class="md:hidden">
+			<template #header>
+				<div class="flex items-center justify-between w-full">
+					<h2 class="text-sm font-semibold text-gray-800">
+						Puntos visibles ({{ visibleEntities.length }})
+					</h2>
+					<UButton
+						color="neutral"
+						variant="ghost"
+						icon="i-heroicons-x-mark-20-solid"
+						class="-my-1"
+						@click="isVisibleListOpen = false"
+					/>
+				</div>
+			</template>
+			<template #body>
+				<div class="p-2 space-y-2 text-sm max-h-[60vh] overflow-y-auto">
+					<div
+						v-for="entity in visibleEntities"
+						:key="entity.id"
+						class="flex items-start gap-2 p-3 rounded hover:bg-gray-100 cursor-pointer"
+						@click="handleVisibleEntityClick(entity)"
+					>
+						<div class="flex-shrink-0 h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
+							<img v-if="entity.logoLink" :src="entity.logoLink" alt="" class="h-full w-full object-contain" />
+							<span v-else class="text-xs text-gray-500">{{ entity.name.charAt(0) }}</span>
+						</div>
+						<div class="flex-1 min-w-0">
+							<p class="font-medium text-gray-900 truncate">{{ entity.name }}</p>
+							<p v-if="entity.objective" class="text-xs text-gray-600 line-clamp-2">
+								{{ entity.objective }}
+							</p>
+						</div>
+					</div>
+					<div v-if="!visibleEntities.length" class="px-2 py-4 text-xs text-gray-500 italic">
+						Mueve o acerca el mapa para ver puntos aqui.
+					</div>
+				</div>
+			</template>
+		</USlideover>
 
 		<USlideover v-model:open="isModalOpen" :prevent-close="false">
 
@@ -88,8 +142,17 @@
 							{{ selectedEntity?.name }}
 						</h3>
 					</div>
-					<UButton color="neutral" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1"
-						@click="isModalOpen = false" />
+					<div class="flex items-center gap-1">
+						<UButton
+							color="neutral"
+							variant="ghost"
+							icon="i-heroicons-link-20-solid"
+							class="-my-1"
+							@click="copySelectedEntityLink"
+						/>
+						<UButton color="neutral" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1"
+							@click="isModalOpen = false" />
+					</div>
 				</div>
 			</template>
 			<template #body>
@@ -173,15 +236,22 @@ import { useRoute } from 'vue-router';
 
 // Lógica para obtener los datos de las entidades si es necesario
 const { data } = await useFetch<{ entities: Entity[], hubs: Record<string, Hub[]> }>('/api/entities')
+const toast = useToast()
 
 const entities = computed(() => data.value?.entities ?? [])
 const hubs = computed(() => data.value?.hubs ?? {})
 
 // Lista de entidades actualmente visibles en el mapa
 const visibleEntities = ref<Entity[]>([])
+const isVisibleListOpen = ref(false)
 
 function handleVisibleChange(entities: Entity[]) {
 	visibleEntities.value = entities
+}
+
+function handleVisibleEntityClick(entity: Entity) {
+	isVisibleListOpen.value = false
+	handleMarkerClick(entity)
 }
 
 // --- Buscador y capas ---
@@ -259,6 +329,27 @@ const selectedEntity = ref<Entity | null>(null)
 function handleMarkerClick(entity: Entity) {
 	selectedEntity.value = entity;
 	isModalOpen.value = true;
+}
+
+async function copySelectedEntityLink() {
+	if (!selectedEntity.value || !import.meta.client) return
+
+	const url = `${window.location.origin}/?entity=${selectedEntity.value.id}`
+
+	try {
+		await navigator.clipboard.writeText(url)
+		toast.add({
+			title: 'Enlace copiado',
+			description: 'Ya puedes compartir esta entidad.',
+			color: 'success',
+		})
+	} catch {
+		toast.add({
+			title: 'No se pudo copiar',
+			description: url,
+			color: 'warning',
+		})
+	}
 }
 
 const listDetails = {
