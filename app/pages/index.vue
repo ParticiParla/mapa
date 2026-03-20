@@ -90,7 +90,13 @@
 			</div>
 		</main>
 
-		<USlideover v-model:open="isVisibleListOpen" side="bottom" class="md:hidden">
+		<USlideover
+			v-model:open="isVisibleListOpen"
+			side="bottom"
+			class="md:hidden"
+			title="Puntos visibles"
+			description="Listado de entidades visibles en el mapa."
+		>
 			<template #header>
 				<div class="flex items-center justify-between w-full">
 					<h2 class="text-sm font-semibold text-gray-800">
@@ -131,7 +137,12 @@
 			</template>
 		</USlideover>
 
-		<USlideover v-model:open="isModalOpen" :prevent-close="false">
+		<USlideover
+			v-model:open="isModalOpen"
+			:prevent-close="false"
+			:title="selectedEntity?.name || 'Detalle de entidad'"
+			:description="selectedEntity?.objective || 'Informacion detallada de la entidad seleccionada.'"
+		>
 
 			<template #header>
 				<div class="flex items-center justify-between w-full">
